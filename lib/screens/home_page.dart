@@ -11,6 +11,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<FormState> _formController = GlobalKey<FormState>();
   final TextEditingController _inputController = TextEditingController();
 
   List _taskList = [];
@@ -66,7 +67,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       Map<String, dynamic> newTask = {};
       newTask["title"] = _inputController.text;
-      _inputController.text = "";
+      _inputController.clear();
+      _formController.currentState!.reset();
       newTask["ok"] = false;
       _taskList.add(newTask);
       _saveData();
@@ -92,33 +94,39 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: _inputController,
-                    decoration: const InputDecoration(
-                      labelText: "Nova Tarefa",
-                      labelStyle: TextStyle(color: Colors.green),
-                      hintText: "Digite algo...",
-                      hintStyle: TextStyle(color: Colors.grey),
+            child: Form(
+              key: _formController,
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: _inputController,
+                      decoration: const InputDecoration(
+                        labelText: "Nova Tarefa",
+                        labelStyle: TextStyle(color: Colors.green),
+                        hintText: "Digite algo...",
+                        hintStyle: TextStyle(color: Colors.grey),
+                      ),
+                      onEditingComplete: () {
+                        if (_formController.currentState!.validate()) addTask();
+                      },
+                      validator: (value) {
+                        if (value == "") {
+                          return "Campo vazio";
+                        } else {
+                          return null;
+                        }
+                      },
                     ),
-                    onEditingComplete: () {
-                      if (_inputController.text != "") {
-                        addTask();
-                      }
-                    },
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_inputController.text != "") {
-                      addTask();
-                    }
-                  },
-                  child: const Text("Adicionar"),
-                ),
-              ],
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formController.currentState!.validate()) addTask();
+                    },
+                    child: const Text("Adicionar"),
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
