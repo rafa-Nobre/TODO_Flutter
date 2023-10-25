@@ -11,11 +11,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController _inputController = TextEditingController();
+  final TextEditingController _inputController = TextEditingController();
 
   List _taskList = [];
   int _lastPosition = 0;
-  Map<String, dynamic> _lastRemovedTask = Map();
+  Map<String, dynamic> _lastRemovedTask = {};
 
   @override
   void initState() {
@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
 
   void addTask() {
     setState(() {
-      Map<String, dynamic> newTask = Map();
+      Map<String, dynamic> newTask = {};
       newTask["title"] = _inputController.text;
       _inputController.text = "";
       newTask["ok"] = false;
@@ -100,10 +100,24 @@ class _HomePageState extends State<HomePage> {
                     decoration: const InputDecoration(
                       labelText: "Nova Tarefa",
                       labelStyle: TextStyle(color: Colors.green),
+                      hintText: "Digite algo...",
+                      hintStyle: TextStyle(color: Colors.grey),
                     ),
+                    onEditingComplete: () {
+                      if (_inputController.text != "") {
+                        addTask();
+                      }
+                    },
                   ),
                 ),
-                ElevatedButton(onPressed: addTask, child: const Text("Adicionar")),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_inputController.text != "") {
+                      addTask();
+                    }
+                  },
+                  child: const Text("Adicionar"),
+                ),
               ],
             ),
           ),
@@ -142,15 +156,16 @@ class _HomePageState extends State<HomePage> {
 
           final snack = SnackBar(
             content: Text("Tarefa ${_lastRemovedTask["title"]} removida."),
-            action: SnackBarAction(
-                label: "Desfazer",
-                onPressed: () {
-                  setState(() {
-                    _taskList.insert(_lastPosition, _lastRemovedTask);
-                    _saveData();
-                  });
-                }),
             duration: const Duration(seconds: 2),
+            action: SnackBarAction(
+              label: "Desfazer",
+              onPressed: () {
+                setState(() {
+                  _taskList.insert(_lastPosition, _lastRemovedTask);
+                  _saveData();
+                });
+              },
+            ),
           );
           ScaffoldMessenger.of(context).removeCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(snack);
